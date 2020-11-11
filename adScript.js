@@ -13,11 +13,11 @@ function getAds () {
     for(let i = 0; i < adDiv.length; i++){
         let w = adDiv[i].style.width.split('px')[0];
         let h = adDiv[i].style.height.split('px')[0];
-        
+        let sid = adDiv[i].getAttribute("data-bgn-ad-slot");
         let ed = {
             w,
             h,
-            sid: 'c2e86222-44ab-4fd7-8023-b24cf10e4b64',
+            sid: sid,
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
@@ -136,6 +136,8 @@ function getRandomNumber() {
 }
 
 function getParams() {
+    let adDiv = document.getElementsByClassName("adsbybgn");
+    let id = adDiv[0].getAttribute('data-bgn-ad-client');
     let cn = (new URL(window.location.href)).searchParams.get('utm_campaign');
     let cs = (new URL(window.location.href)).searchParams.get('utm_source');
     let ct = (new URL(window.location.href)).searchParams.get('utm_term');
@@ -147,7 +149,7 @@ function getParams() {
     let bdo = getOS();
     let z = getRandomNumber();
     let params = {
-        id: 'afr2b-beta-a4033079974eade5f6534dc126f73533',
+        id: id,
         dl: encodeURIComponent(window.location.href),
         dh: encodeURIComponent(window.location.hostname),
         dp: encodeURIComponent(window.location.pathname),
