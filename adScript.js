@@ -73,6 +73,7 @@ function getBrowser() {
 function getOS() {
     let OSName = "Unknown";
     let userAgent = window.navigator.userAgent;
+    console.log('user agent changes:::', userAgent);
     if (userAgent.indexOf("Windows NT 10.0")!= -1) OSName="Windows 10";
     if (userAgent.indexOf("Windows NT 6.2") != -1) OSName="Windows 8";
     if (userAgent.indexOf("Windows NT 6.1") != -1) OSName="Windows 7";
