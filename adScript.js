@@ -25,16 +25,16 @@ function getAds () {
         fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`)
             .then((response) => (response.json()))
             .then(data => {
-                adDiv[i].style.backgroundImage = `url('${data.url}')`;
+                adDiv[i].style.backgroundImage = `url('${data.u}')`;
                 params = getUrlFromParams();
-                ed.pkg = data.pkg;
-                ed.url = data.url;
+                ed.p = data.p;
+                ed.u = data.u;
                 params = `${params}&ed=${JSON.stringify(ed)}`;
-                sendImpression('ad_client_impression', params);
+                sendImpression('ai', params);
                 adDiv[i].style.cursor = 'pointer';
                 adDiv[i].onclick = function(e){
-                    window.open(data.clk);
-                    sendImpression('ad_click', params);
+                    window.open(data.c);
+                    sendImpression('ac', params);
                 }
             });
     }
@@ -43,16 +43,16 @@ function getAds () {
 function getDeviceType () {
     const ua = window.navigator.userAgent;
     if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-      return "tablet";
+      return "t";
     }
     if (
       /Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(
         ua
       )
     ) {
-      return "mobile";
+      return "m";
     }
-    return "desktop";
+    return "d";
 };
 
 function getBrowser() {
@@ -72,15 +72,17 @@ function getBrowser() {
 
 function getOS() {
     let OSName = "Unknown";
-    if (window.navigator.userAgent.indexOf("Windows NT 10.0")!= -1) OSName="Windows 10";
-    if (window.navigator.userAgent.indexOf("Windows NT 6.2") != -1) OSName="Windows 8";
-    if (window.navigator.userAgent.indexOf("Windows NT 6.1") != -1) OSName="Windows 7";
-    if (window.navigator.userAgent.indexOf("Windows NT 6.0") != -1) OSName="Windows Vista";
-    if (window.navigator.userAgent.indexOf("Windows NT 5.1") != -1) OSName="Windows XP";
-    if (window.navigator.userAgent.indexOf("Windows NT 5.0") != -1) OSName="Windows 2000";
-    if (window.navigator.userAgent.indexOf("Mac") != -1) OSName="Mac/iOS";
-    if (window.navigator.userAgent.indexOf("X11") != -1) OSName="UNIX";
-    if (window.navigator.userAgent.indexOf("Linux") != -1) OSName="Linux";
+    let userAgent = window.navigator.userAgent;
+    console.log('user agent changes:::', userAgent);
+    if (userAgent.indexOf("Windows NT 10.0")!= -1) OSName="Windows 10";
+    if (userAgent.indexOf("Windows NT 6.2") != -1) OSName="Windows 8";
+    if (userAgent.indexOf("Windows NT 6.1") != -1) OSName="Windows 7";
+    if (userAgent.indexOf("Windows NT 6.0") != -1) OSName="Windows Vista";
+    if (userAgent.indexOf("Windows NT 5.1") != -1) OSName="Windows XP";
+    if (userAgent.indexOf("Windows NT 5.0") != -1) OSName="Windows 2000";
+    if (userAgent.indexOf("Mac") != -1) OSName="Mac/iOS";
+    if (userAgent.indexOf("X11") != -1) OSName="UNIX";
+    if (userAgent.indexOf("Linux") != -1) OSName="Linux";
     return OSName;
 }
 
@@ -121,8 +123,8 @@ function getParams() {
         dh: encodeURIComponent(window.location.hostname),
         dp: encodeURIComponent(window.location.pathname),
         de: encodeURIComponent(document.charset),
-        sr: encodeURIComponent(window.screen.width + 'x' + window.screen.height),
-        vp: encodeURIComponent(window.innerWidth + 'x' + window.innerHeight),
+        sr: encodeURIComponent(window.screen.width + ',' + window.screen.height),
+        vp: encodeURIComponent(window.innerWidth + ',' + window.innerHeight),
         sd: encodeURIComponent(window.screen.colorDepth),
         dt: encodeURIComponent(document.title),
         ul: encodeURIComponent(window.navigator.language),
@@ -160,7 +162,7 @@ function sendImpression (type, params) {
 }
 
 document.addEventListener("DOMContentLoaded", function(){
-    sendImpression('pageview');
+    sendImpression('pv');
     getAds();
 });
 
