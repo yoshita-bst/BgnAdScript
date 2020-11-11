@@ -72,18 +72,46 @@ function getBrowser() {
 }
 
 function getOS() {
-    let OSName = "Unknown";
+    let OSName = "Linux";
     let userAgent = window.navigator.userAgent;
-    console.log('user agent changes:::', userAgent);
-    if (userAgent.indexOf("Windows NT 10.0")!= -1) OSName="Windows 10";
-    if (userAgent.indexOf("Windows NT 6.2") != -1) OSName="Windows 8";
-    if (userAgent.indexOf("Windows NT 6.1") != -1) OSName="Windows 7";
-    if (userAgent.indexOf("Windows NT 6.0") != -1) OSName="Windows Vista";
-    if (userAgent.indexOf("Windows NT 5.1") != -1) OSName="Windows XP";
-    if (userAgent.indexOf("Windows NT 5.0") != -1) OSName="Windows 2000";
+    if (userAgent.indexOf("Firefox") != -1) OSName="Firefox OS";
+    if (userAgent.indexOf("watchOS") != -1) OSName="WatchOS";
     if (userAgent.indexOf("Mac") != -1) OSName="Mac/iOS";
+    if (userAgent.indexOf("iOS") != -1) OSName="Mac/iOS";
+    if (userAgent.indexOf("iPhone") != -1) OSName="iOS";
+    if (userAgent.indexOf("iPad") != -1) OSName="iOS";
+    if (userAgent.indexOf("Darwin") != -1) OSName="iOS";
     if (userAgent.indexOf("X11") != -1) OSName="UNIX";
     if (userAgent.indexOf("Linux") != -1) OSName="Linux";
+    if (userAgent.indexOf("Android") != -1) OSName="Android";
+    if (userAgent.indexOf("Windows") != -1) OSName="Windows";
+    if (userAgent.indexOf("Ubuntu") != -1) OSName="Ubuntu";
+    if (userAgent.indexOf("Bada") != -1) OSName="Bada";
+    if (userAgent.indexOf("BB10") != -1) OSName="BlackBerry OS";
+    if (userAgent.indexOf("BlackBerry") != -1) OSName="BlackBerry OS";
+    if (userAgent.indexOf("RIM Tablet OS") != -1) OSName="BlackBerry Tablet OS";
+    if (userAgent.indexOf("BREW") != -1) OSName="BREW";
+    if (userAgent.indexOf("Brew MP") != -1) OSName="Brew MP";
+    if (userAgent.indexOf("BMP") != -1) OSName="Brew MP";
+    if (userAgent.indexOf("BSD") != -1) OSName="BSD";
+    if (userAgent.indexOf("KaiOS") != -1) OSName="KaiOS";
+    if (userAgent.indexOf("KAIOS") != -1) OSName="KaiOS";
+    if (userAgent.indexOf("Kindle") != -1) OSName="Kindle";
+    if (userAgent.indexOf("MeeGo") != -1) OSName="MeeGo";
+    if (userAgent.indexOf("Nokia") != -1) OSName="Nokia";
+    if (userAgent.indexOf("SunOS") != -1) OSName="Solaris";
+    if (userAgent.indexOf("Symb") != -1) OSName="Symbian OS";
+    if (userAgent.indexOf("VRE") != -1) OSName="VRE";
+    if (userAgent.indexOf("webOS") != -1) OSName="webOS";
+    if (userAgent.indexOf("hpwOS") != -1) OSName="webOS";
+    if (userAgent.indexOf("WebTV") != -1) OSName="WebTV";
+    if (userAgent.indexOf("Samsung") != -1) OSName="Samsung";
+    if (userAgent.indexOf("Panasonic") != -1) OSName="Panasonic";
+    if (userAgent.indexOf("OpenBSD") != -1) OSName="OpenBSD";
+    if (userAgent.indexOf("FreeBSD") != -1) OSName="FreeBSD";
+    if (userAgent.indexOf("NetBSD") != -1) OSName="NetBSD";
+    if (userAgent.indexOf("Roku") != -1) OSName="Roku";
+    console.log('OS:::', userAgent);
     return OSName;
 }
 
