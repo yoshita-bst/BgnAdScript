@@ -33,6 +33,7 @@ function getAds () {
                 sendImpression('ai', params);
                 adDiv[i].style.cursor = 'pointer';
                 adDiv[i].onclick = function(e){
+                    console.log('inside click event:::', data.c)
                     window.open(data.c);
                     sendImpression('ac', params);
                 }
