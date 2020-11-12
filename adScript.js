@@ -20,7 +20,7 @@ function getAds () {
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
-        fetch(`https://bgn.gg/ad/c?${params}`)
+        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`)
             .then((response) => (response.json()))
             .then(data => {
                 adDiv[i].style.backgroundImage = `url('${data.u}')`;
@@ -180,7 +180,7 @@ function sendImpression (type, params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    fetch(`https://bgn.gg/ad/i?${params}`)
+    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`)
         .then(response => response.text())
         .then(data => {
         });
