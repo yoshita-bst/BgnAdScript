@@ -7,7 +7,7 @@
    6. Handling for corrupt image.
 */
 
-function getAds () {
+async function getAds () {
     let adDiv = document.getElementsByClassName("adsbybgn");
     for(let i = 0; i < adDiv.length; i++){
         let w = adDiv[i].style.width.split('px')[0];
@@ -20,26 +20,30 @@ function getAds () {
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
-        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`)
-            .then((response) => (response.json()))
-            .then(data => {
-                adDiv[i].style.backgroundImage = `url('${data.u}')`;
-                params = getUrlFromParams();
-                ed.p = data.p;
-                ed.u = data.u;
-                params = `${params}&ed=${JSON.stringify(ed)}`;
-                sendImpression('ai', params);
-                adDiv[i].style.cursor = 'pointer';
-                adDiv[i].onclick = function(e){
-                    params = getUrlFromParams();
-                    ed.p = data.p;
-                    ed.u = data.u;
-                    ed.c = data.c;
-                    params = `${params}&ed=${JSON.stringify(ed)}`;
-                    window.open(data.c);
-                    sendImpression('ac', params);
-                }
-            });
+        let data = await fetch(`https://bgn.gg/ad/c?${params}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              }
+        })
+        adDiv[i].style.backgroundImage = `url('${data.u}')`;
+        params = getUrlFromParams();
+        ed.p = data.p;
+        ed.u = data.u;
+        params = `${params}&ed=${JSON.stringify(ed)}`;
+        sendImpression('ai', params);
+        adDiv[i].style.cursor = 'pointer';
+        adDiv[i].onclick = function(e){
+            params = getUrlFromParams();
+            ed.p = data.p;
+            ed.u = data.u;
+            ed.c = data.c;
+            params = `${params}&ed=${JSON.stringify(ed)}`;
+            window.open(data.c);
+            sendImpression('ac', params);
+        }
     }
 }
 
@@ -179,15 +183,20 @@ function getParams() {
     return params;
 }
 
-function sendImpression (type, params) {
+async function sendImpression (type, params) {
     if(!params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`)
-        .then(response => response.text())
-        .then(data => {
-        });
+    let data =  fetch(`https://bgn.gg/ad/i?${params}`, {
+        method: 'GET',
+        headers: {
+            Accept: 'application/json',
+            'content-type': 'application/json',
+          },
+        credentials: 'include'
+    })
+    console.log('impression sent', data);
 }
 
 document.addEventListener("DOMContentLoaded", function(){
