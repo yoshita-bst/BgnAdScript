@@ -35,6 +35,7 @@ function getAds () {
                     ed.p = data.p;
                     ed.u = data.u;
                     ed.c = data.c;
+                    params = `${params}&ed=${JSON.stringify(ed)}`;
                     window.open(data.c);
                     sendImpression('ac', params);
                 }
