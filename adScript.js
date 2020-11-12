@@ -7,7 +7,6 @@
    6. Handling for corrupt image.
 */
 
-
 function getAds () {
     let adDiv = document.getElementsByClassName("adsbybgn");
     for(let i = 0; i < adDiv.length; i++){
@@ -21,19 +20,18 @@ function getAds () {
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
-        console.log('...calling ads api', i);
-        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`)
+        fetch(`https://bgn.gg/ad/c?${params}`)
             .then((response) => (response.json()))
             .then(data => {
                 adDiv[i].style.backgroundImage = `url('${data.u}')`;
                 params = getUrlFromParams();
                 ed.p = data.p;
                 ed.u = data.u;
+                ed.c = data.c;
                 params = `${params}&ed=${JSON.stringify(ed)}`;
                 sendImpression('ai', params);
                 adDiv[i].style.cursor = 'pointer';
                 adDiv[i].onclick = function(e){
-                    console.log('inside click event:::', data.c)
                     window.open(data.c);
                     sendImpression('ac', params);
                 }
@@ -111,7 +109,6 @@ function getOS() {
     if (userAgent.indexOf("FreeBSD") != -1) OSName="FreeBSD";
     if (userAgent.indexOf("NetBSD") != -1) OSName="NetBSD";
     if (userAgent.indexOf("Roku") != -1) OSName="Roku";
-    console.log('OS:::', userAgent);
     return OSName;
 }
 
@@ -175,7 +172,6 @@ function getParams() {
     if(ct) params.ct = ct;
     if(cm) params.cm = cm;
     if(cc) params.cc = cc;
-    console.log('params:', params);
     return params;
 }
 
@@ -184,11 +180,9 @@ function sendImpression (type, params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    console.log('...calling impression api');
-    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`)
+    fetch(`https://bgn.gg/ad/i?${params}`)
         .then(response => response.text())
         .then(data => {
-            console.log('response from impression API:', data);
         });
 }
 
