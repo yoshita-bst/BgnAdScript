@@ -27,11 +27,14 @@ function getAds () {
                 params = getUrlFromParams();
                 ed.p = data.p;
                 ed.u = data.u;
-                ed.c = data.c;
                 params = `${params}&ed=${JSON.stringify(ed)}`;
                 sendImpression('ai', params);
                 adDiv[i].style.cursor = 'pointer';
                 adDiv[i].onclick = function(e){
+                    params = getUrlFromParams();
+                    ed.p = data.p;
+                    ed.u = data.u;
+                    ed.c = data.c;
                     window.open(data.c);
                     sendImpression('ac', params);
                 }
