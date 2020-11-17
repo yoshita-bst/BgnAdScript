@@ -7,7 +7,7 @@
    6. Handling for corrupt image.
 */
 
-async function getAds () {
+function getAds () {
     let adDiv = document.getElementsByClassName("adsbybgn");
     for(let i = 0; i < adDiv.length; i++){
         let w = adDiv[i].style.width.split('px')[0];
@@ -20,27 +20,28 @@ async function getAds () {
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
-        let data = await fetch(`https://bgn.gg/ad/c?${params}`, {
+        fetch(`https://bgn.gg/ad/c?${params}`, {
             method: 'GET',
             credentials: 'include',
-        })
-        console.log('the data:::', data, data.json());
-        adDiv[i].style.backgroundImage = `url('${data.u}')`;
-        params = getUrlFromParams();
-        ed.p = data.p;
-        ed.u = data.u;
-        params = `${params}&ed=${JSON.stringify(ed)}`;
-        sendImpression('ai', params);
-        adDiv[i].style.cursor = 'pointer';
-        adDiv[i].onclick = function(e){
+        }).then((res)=>(res.json())).then((data)=>{
+            console.log('the data:::', data);
+            adDiv[i].style.backgroundImage = `url('${data.u}')`;
             params = getUrlFromParams();
             ed.p = data.p;
             ed.u = data.u;
-            ed.c = data.c;
             params = `${params}&ed=${JSON.stringify(ed)}`;
-            window.open(data.c);
-            sendImpression('ac', params);
-        }
+            sendImpression('ai', params);
+            adDiv[i].style.cursor = 'pointer';
+            adDiv[i].onclick = function(e){
+                params = getUrlFromParams();
+                ed.p = data.p;
+                ed.u = data.u;
+                ed.c = data.c;
+                params = `${params}&ed=${JSON.stringify(ed)}`;
+                window.open(data.c);
+                sendImpression('ac', params);
+            }
+        })
     }
 }
 
