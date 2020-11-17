@@ -23,6 +23,7 @@ function getAds () {
         fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`, {
             method: 'GET',
             credentials: 'include',
+            mode: 'no-cors'
         }).then((res)=>(res.json())).then((data)=>{
             adDiv[i].style.backgroundImage = `url('${data.u}')`;
             params = getUrlFromParams();
@@ -187,7 +188,8 @@ function sendImpression (type, params) {
     params = params + `&ev=${type}`;
     fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`, {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        mode: 'no-cors'
     })
 }
 
