@@ -190,7 +190,6 @@ async function sendImpression (type, params) {
         method: 'GET',
         credentials: 'include'
     })
-    console.log('impression sent', data.json());
 }
 
 document.addEventListener("DOMContentLoaded", function(){
