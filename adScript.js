@@ -24,7 +24,6 @@ function getAds () {
             method: 'GET',
             credentials: 'include',
         }).then((res)=>(res.json())).then((data)=>{
-            console.log('the data:::', data);
             adDiv[i].style.backgroundImage = `url('${data.u}')`;
             params = getUrlFromParams();
             ed.p = data.p;
@@ -181,12 +180,12 @@ function getParams() {
     return params;
 }
 
-async function sendImpression (type, params) {
+function sendImpression (type, params) {
     if(!params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    let data =  fetch(`https://bgn.gg/ad/i?${params}`, {
+    fetch(`https://bgn.gg/ad/i?${params}`, {
         method: 'GET',
         credentials: 'include'
     })
