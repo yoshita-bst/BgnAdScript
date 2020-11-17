@@ -1,10 +1,9 @@
 /*
    1. Send an impression on page load and ad click as of now.
    2. Render ads on document's readystate. Make APi calls one by one.
-   3. Always send uid from the cookies. (Resolve localhost error)
-   4. Send all the tracking parameters in all the api calls.
-   5. Handle Ad rendering for multiple ads in single page. (make use of a for loop)
-   6. Handling for corrupt image.
+   3. Send all the tracking parameters in all the api calls.
+   4. Handle Ad rendering for multiple ads in single page. (make use of a for loop)
+   5. Handling for corrupt image.
 */
 
 function getAds () {
@@ -20,12 +19,10 @@ function getAds () {
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
-        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`, {
+        fetch(`https://bgn.gg/ad/c?${params}`, {
             method: 'GET',
-            credentials: 'include'
-        })
-        .then(res=>res.json())
-        .then((data)=>{
+            credentials: 'include',
+        }).then((res)=>(res.json())).then((data)=>{
             adDiv[i].style.backgroundImage = `url('${data.u}')`;
             params = getUrlFromParams();
             ed.p = data.p;
@@ -42,9 +39,6 @@ function getAds () {
                 window.open(data.c);
                 sendImpression('ac', params);
             }
-        })
-        .catch((err)=>{
-            console.log("ERR:",err)
         })
     }
 }
@@ -190,10 +184,9 @@ function sendImpression (type, params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`, {
+    fetch(`https://bgn.gg/ad/i?${params}`, {
         method: 'GET',
-        credentials: 'include',
-        mode: 'no-cors'
+        credentials: 'include'
     })
 }
 
