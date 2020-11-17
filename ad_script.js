@@ -23,23 +23,36 @@ function getAds () {
             method: 'GET',
             credentials: 'include',
         }).then((res)=>(res.json())).then((data)=>{
-            adDiv[i].style.backgroundImage = `url('${data.u}')`;
+            loadAd(data.u, adDiv[i]);
             params = getUrlFromParams();
             ed.p = data.p;
             ed.u = data.u;
             params = `${params}&ed=${JSON.stringify(ed)}`;
-            sendImpression('ai', params);
             adDiv[i].style.cursor = 'pointer';
             adDiv[i].onclick = function(e){
                 params = getUrlFromParams();
                 ed.p = data.p;
                 ed.u = data.u;
                 ed.c = data.c;
+                ed.i = data.i;
                 params = `${params}&ed=${JSON.stringify(ed)}`;
                 window.open(data.c);
                 sendImpression('ac', params);
             }
         })
+    }
+}
+
+function loadAd (url, adDiv) {
+    let s = document.createElement("IMG");
+    s.src = url;
+    s.onerror = function(){
+          console.log("file with "+url+" invalid");
+          adDiv.style.backgroundImage = "url('https://semantic-ui.com/images/wireframe/square-image.png')";
+    }
+    s.onload = function(){
+        console.log("file with "+url+" valid");
+        adDiv.style.backgroundImage = `url('${url}')`;
     }
 }
 
