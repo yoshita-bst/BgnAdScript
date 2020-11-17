@@ -22,7 +22,6 @@ function getAds () {
         params = `${params}&ed=${JSON.stringify(ed)}`;
         fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`, {
             method: 'GET',
-            mode: 'no-cors',
             credentials: 'include'
         })
         .then(res=>res.json())
@@ -193,8 +192,7 @@ function sendImpression (type, params) {
     params = params + `&ev=${type}`;
     fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`, {
         method: 'GET',
-        credentials: 'include',
-        mode: 'no-cors'
+        credentials: 'include'
     })
 }
 
