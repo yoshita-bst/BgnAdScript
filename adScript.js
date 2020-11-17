@@ -24,6 +24,7 @@ async function getAds () {
             method: 'GET',
             credentials: 'include',
         })
+        console.log('the data:::', data, data.json());
         adDiv[i].style.backgroundImage = `url('${data.u}')`;
         params = getUrlFromParams();
         ed.p = data.p;
@@ -188,7 +189,7 @@ async function sendImpression (type, params) {
         method: 'GET',
         credentials: 'include'
     })
-    console.log('impression sent', data);
+    console.log('impression sent', data.json());
 }
 
 document.addEventListener("DOMContentLoaded", function(){
