@@ -25,7 +25,7 @@ function getAds () {
             mode: 'no-cors',
             credentials: 'include'
         })
-        // .then((res)=>(res.json()))
+        .then((res)=>(res.text()))
         .then((data)=>{
             adDiv[i].style.backgroundImage = `url('${data.u}')`;
             params = getUrlFromParams();
