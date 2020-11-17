@@ -23,10 +23,6 @@ async function getAds () {
         let data = await fetch(`https://bgn.gg/ad/c?${params}`, {
             method: 'GET',
             credentials: 'include',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-              }
         })
         adDiv[i].style.backgroundImage = `url('${data.u}')`;
         params = getUrlFromParams();
@@ -190,10 +186,6 @@ async function sendImpression (type, params) {
     params = params + `&ev=${type}`;
     let data =  fetch(`https://bgn.gg/ad/i?${params}`, {
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            'content-type': 'application/json',
-          },
         credentials: 'include'
     })
     console.log('impression sent', data);
