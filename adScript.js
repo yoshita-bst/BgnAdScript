@@ -20,7 +20,7 @@ function getAds () {
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
-        fetch(`http://cors.io/?https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`, {
+        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`, {
             method: 'GET',
             credentials: 'include'
         })
@@ -190,9 +190,10 @@ function sendImpression (type, params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    fetch(`http://cors.io/?https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`, {
+    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`, {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        mode: 'no-cors'
     })
 }
 
