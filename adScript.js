@@ -24,7 +24,9 @@ function getAds () {
             method: 'GET',
             mode: 'no-cors',
             credentials: 'include'
-        }).then((res)=>(res.json())).then((data)=>{
+        })
+        // .then((res)=>(res.json()))
+        .then((data)=>{
             adDiv[i].style.backgroundImage = `url('${data.u}')`;
             params = getUrlFromParams();
             ed.p = data.p;
@@ -41,6 +43,9 @@ function getAds () {
                 window.open(data.c);
                 sendImpression('ac', params);
             }
+        })
+        .catch((err)=>{
+            console.log("ERR:",err)
         })
     }
 }
