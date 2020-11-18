@@ -6,8 +6,21 @@
    5. Handling for corrupt image.
 */
 
+/* 
+   Fetches window.location.search
+   and returns an object of corresponding key value pairs
+*/
+function getUrlParams() {
+    window.urlParams = {};
+    return window.location.search.slice(1).split("&").forEach(it => { window.urlParams[it.split("=")[0]] = it.split("=")[1]})
+}
+
+/*
+    Fetches all the ads through and API call
+*/ 
 function getAds () {
     let adDiv = document.getElementsByClassName("adsbybgn");
+    window.urlParams.logs && console.log('inside GET Ads');
     for(let i = 0; i < adDiv.length; i++){
         let w = adDiv[i].style.width.split('px')[0];
         let h = adDiv[i].style.height.split('px')[0];
@@ -19,10 +32,12 @@ function getAds () {
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
-        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/as/c?${params}`, {
+        window.urlParams.logs && console.log('Ads call PARAMS', params);
+        fetch(`https://bgn.gg/as/c?${params}`, {
             method: 'GET',
             credentials: 'include',
         }).then((res)=>(res.json())).then((data)=>{
+            window.urlParams.logs && console.log('GET Ads SUCCESS:', data);
             loadAd(data, adDiv[i]);
             params = getUrlFromParams();
             ed.p = data.p;
@@ -36,13 +51,18 @@ function getAds () {
                 ed.c = data.c;
                 ed.i = data.i;
                 params = `${params}&ed=${JSON.stringify(ed)}`;
+                window.urlParams.logs && console.log('Ad click PARAMS:', params);
                 window.open(data.c);
                 sendImpression('ac', params);
             }
+        }).catch(err=>{
+            window.urlParams.logs && console.log('GGET Ads FAILURE:', err);
         })
     }
 }
 
+
+/* Adds styling to the 'Ad' text of the ad unit */
 function styleAdButton (adButton) {
     adButton.style.background = "#eee";
     adButton.style.color = "blue";
@@ -55,6 +75,8 @@ function styleAdButton (adButton) {
     adButton.style.justifyContent = "center";
 }
 
+
+/* Adds styling to the 'i' image of the add unit */
 function styleiImage(iImage) {
     iImage.style.width = "15px";
     iImage.style.height = "15px";
@@ -64,6 +86,7 @@ function styleiImage(iImage) {
     iImage.hover
 }
 
+/* adds styling to the div that appears on hover of the 'i' image of ad unit */ 
 function styleHoverDiv(hoverDiv) {
     hoverDiv.style.background = "#eee";
     hoverDiv.style.color = "blue";
@@ -80,6 +103,10 @@ function styleHoverDiv(hoverDiv) {
 
 }
 
+/* 
+    loads the ad image into the dom. shows a random default 
+    image if the image url received is broken.
+*/
 function loadAd (data, adDiv) {
     let s = document.createElement("IMG");
     s.src = data.u;
@@ -200,6 +227,10 @@ function getOS() {
     return OSName;
 }
 
+/*
+    Used inside getUrlFromParams() function
+    to append only non-null params to the string
+*/
 function appendParam(paramKey, paramValue, string) {
     if(paramKey){
         string = string + `&${paramKey}=${paramValue}`;
@@ -207,6 +238,10 @@ function appendParam(paramKey, paramValue, string) {
     return string;
 }
 
+/*
+    Form the params url for GET
+    api calls done in the script.
+*/
 function getUrlFromParams() {
     let params = getParams();
     let paramString = "";
@@ -216,10 +251,16 @@ function getUrlFromParams() {
     return paramString;
 }
 
+
+/* Get a random 4 digit number */
 function getRandomNumber() {
     return Math.floor(1000 + Math.random() * 9000);
 }
 
+/*
+    Form a params object with all the keys
+    necessary to be sent as params in stats api calls 
+*/
 function getParams() {
     let adDiv = document.getElementsByClassName("adsbybgn");
     let id = adDiv[0].getAttribute('data-bgn-ad-client');
@@ -263,18 +304,27 @@ function getParams() {
     return params;
 }
 
+/* stats api call */
 function sendImpression (type, params) {
+    window.urlParams.logs && console.log('Sending Impression');
     if(!params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/as/i?${params}`, {
+    fetch(`https://bgn.gg/as/i?${params}`, {
         method: 'GET',
         credentials: 'include'
+    }).then((res)=>{
+        window.urlParams.logs && console.log('Impression SUCCESS', type);
+    }).catch(err => {
+        window.urlParams.logs && console.log('Impression ERROR', err);
     })
 }
 
+/* fires on DOM load */
 document.addEventListener("DOMContentLoaded", function(){
+    getUrlParams();
+    window.urlParams.logs && console.log('DOM content loaded');
     sendImpression('pv');
     getAds();
 });
