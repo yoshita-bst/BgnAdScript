@@ -19,11 +19,11 @@ function getAds () {
         }
         let params = getUrlFromParams();
         params = `${params}&ed=${JSON.stringify(ed)}`;
-        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/c?${params}`, {
+        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/as/c?${params}`, {
             method: 'GET',
             credentials: 'include',
         }).then((res)=>(res.json())).then((data)=>{
-            loadAd(data.u, adDiv[i]);
+            loadAd(data, adDiv[i]);
             params = getUrlFromParams();
             ed.p = data.p;
             ed.u = data.u;
@@ -43,16 +43,87 @@ function getAds () {
     }
 }
 
-function loadAd (url, adDiv) {
+function styleAdButton (adButton) {
+    adButton.style.background = "#eee";
+    adButton.style.color = "blue";
+    adButton.style.width = "15px";
+    adButton.style.height = "15px";
+    adButton.style.fontSize = "10px";
+    adButton.style.position = "relative";
+    adButton.style.display = "flex";
+    adButton.style.alignItems = "center";
+    adButton.style.justifyContent = "center";
+}
+
+function styleiImage(iImage) {
+    iImage.style.width = "15px";
+    iImage.style.height = "15px";
+    iImage.style.position = "absolute";
+    iImage.style.top = "0";
+    iImage.style.right = "0";
+    iImage.hover
+}
+
+function styleHoverDiv(hoverDiv) {
+    hoverDiv.style.background = "#eee";
+    hoverDiv.style.color = "blue";
+    hoverDiv.style.width = "65px";
+    hoverDiv.style.height = "15px";
+    hoverDiv.style.fontSize = "10px";
+    hoverDiv.style.position = "absolute";
+    hoverDiv.style.display = "flex";
+    hoverDiv.style.alignItems = "center";
+    hoverDiv.style.justifyContent = "center";
+    hoverDiv.style.top = "0px";
+    hoverDiv.style.right = "15px";
+    hoverDiv.style.visibility = "hidden";
+
+}
+
+function loadAd (data, adDiv) {
     let s = document.createElement("IMG");
-    s.src = url;
+    s.src = data.u;
+    let w = adDiv.style.width.split('px')[0];
+    let h = adDiv.style.height.split('px')[0];
+    let sid = adDiv.getAttribute("data-bgn-ad-slot");
+    let ed = {
+        w,
+        h,
+        sid: sid,
+    }
+    ed.p = data.p;
+    ed.u = data.u;
+    ed.i = data.i;
+    let params = getUrlFromParams();
+    params = `${params}&ed=${JSON.stringify(ed)}`;
     s.onerror = function(){
-          console.log("file with "+url+" invalid");
-          adDiv.style.backgroundImage = "url('https://semantic-ui.com/images/wireframe/square-image.png')";
+        adDiv.style.backgroundImage = "url('https://semantic-ui.com/images/wireframe/square-image.png')";
+        sendImpression('ae', params);
     }
     s.onload = function(){
-        console.log("file with "+url+" valid");
-        adDiv.style.backgroundImage = `url('${url}')`;
+        adDiv.style.backgroundImage = `url('${data.u}')`;
+        adDiv.style.position = "relative";
+        let adButton = document.createElement('div');
+        adButton.className = 'adb';
+        styleAdButton(adButton);
+        adButton.innerHTML = "Ad";
+        adDiv.appendChild(adButton);
+        let iImage = document.createElement('img');
+        styleiImage(iImage);
+        iImage.src = "https://tpc.googlesyndication.com/pagead/images/abg/icon.png";
+        adDiv.appendChild(iImage);
+        let hoverDiv = document.createElement('div');
+        let uniqueId = getRandomNumber();
+        hoverDiv.id = uniqueId;
+        styleHoverDiv(hoverDiv);
+        hoverDiv.innerHTML = "Ads by BGN";
+        iImage.onmouseover = function(e){
+            hoverDiv.style.visibility = 'visible';
+        }
+        iImage.onmouseout = function(e){
+            hoverDiv.style.visibility = 'hidden';
+        }
+        adDiv.appendChild(hoverDiv);
     }
 }
 
@@ -197,7 +268,7 @@ function sendImpression (type, params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/ad/i?${params}`, {
+    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/as/i?${params}`, {
         method: 'GET',
         credentials: 'include'
     })
