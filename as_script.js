@@ -17,58 +17,29 @@ console.log("version:", version);
 
 getUrlParams();
 
+function getHost() {
+    let HOST = "https://cdn.bgn.gg";
+    let env = window.location.href;
+    if(env.includes("/afr2b/engg/") || env.includes('127.0.0.1')){
+        logger('inside if of get host');
+        HOST = "https://bgn-1-dot-bluestacks-cloud-qa.appspot.com";
+    }
+    return HOST;
+}
+
+
 function getUrlParams() {
     window.urlParams = {};
     return window.location.search.slice(1).split("&").forEach(it => { window.urlParams[it.split("=")[0]] = it.split("=")[1]})
 }
 
-/*
-    Fetches all the ads through and API call
-*/ 
-function getAds () {
-    let adDiv = document.getElementsByClassName("asbybgn");
-    window.urlParams === "true" && console.log('inside GET Ads');
-    for(let i = 0; i < adDiv.length; i++){
-        let w = adDiv[i].style.width.split('px')[0];
-        let h = adDiv[i].style.height.split('px')[0];
-        let sid = adDiv[i].getAttribute("data-bgn-as-slot");
-        let ed = {
-            w,
-            h,
-            sid: sid,
-        }
-        let params = getUrlFromParams();
-        params = `${params}&ed=${JSON.stringify(ed)}`;
-        window.urlParams.bgnLogs === "true" && console.log('Ads call PARAMS', params);
-        fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/as/c?${params}`, {
-            method: 'GET',
-            credentials: 'include',
-        }).then((res)=>(res.json())).then((data)=>{
-            window.urlParams.bgnLogs === "true" && console.log('GET Ads SUCCESS:', data);
-            loadAd(data, adDiv[i]);
-            params = getUrlFromParams();
-            ed.p = data.p;
-            ed.u = data.u;
-            params = `${params}&ed=${JSON.stringify(ed)}`;
-            adDiv[i].style.cursor = 'pointer';
-            adDiv[i].onclick = function(e){
-                params = getUrlFromParams();
-                ed.p = data.p;
-                ed.u = data.u;
-                ed.c = data.c;
-                ed.i = data.i;
-                params = `${params}&ed=${JSON.stringify(ed)}`;
-                window.urlParams.bgnLogs === "true" && console.log('Ad click PARAMS:', params);
-                window.open(data.c);
-                sendImpression('ac', params);
-            }
-        }).catch(err=>{
-            window.urlParams === "true" && console.log('GGET Ads FAILURE:', err);
-        })
-    }
+function logger() {
+    let string = arguments[0];
+    let params = [...arguments].slice(1);
+    window.urlParams.bgnLogs === "true" && console.log(string, ...params);
 }
 
-function clickAdDiv (adDiv, data) {
+function getEd(adDiv, adData) {
     let w = adDiv.style.width.split('px')[0];
     let h = adDiv.style.height.split('px')[0];
     let sid = adDiv.getAttribute("data-bgn-as-slot");
@@ -77,13 +48,72 @@ function clickAdDiv (adDiv, data) {
         h,
         sid: sid,
     }
-    params = getUrlFromParams();
-    ed.p = data.p;
-    ed.u = data.u;
-    ed.c = data.c;
-    ed.i = data.i;
+    if(adData){
+        ed.p = adData.p;
+        ed.u = adData.u;
+        ed.c = encodeURIComponent(adData.c);
+        ed.i = adData.i;
+        ed.a = adData.a;
+    }
+    return ed;
+}
+
+function apiCall(adDiv, url, successHandler, failureHandler, ev, ns, adData){
+    let ed = getEd(adDiv, adData);
+    if(ns){
+        ed.ns = ns;
+    }
+    let params = getUrlFromParams();
     params = `${params}&ed=${JSON.stringify(ed)}`;
-    window.urlParams.bgnLogs === "true" && console.log('Ad click PARAMS:', params);
+    if(ev){
+        params = params + `&ev=${ev}`
+    }
+    fetch(`${getHost()}/${url}?${params}`, {
+        method: 'GET',
+        credentials: 'include',
+    }).then((res)=>{
+        let contentType = res.headers.get("content-type");
+        if(contentType.indexOf("application/json")!== -1){
+            return res.json()
+        } else {
+            return res.text()
+        }
+    }).then((data)=>{
+        successHandler(data);
+    }).catch(err=>{
+        failureHandler(err);
+    })
+}
+
+/*
+    Fetches all the ads through and API call
+*/ 
+function getAds () {
+    let adDiv = document.getElementsByClassName("asbybgn");
+    logger('inside GET Ads');
+    for(let i = 0; i < adDiv.length; i++){
+        let ed = getEd(adDiv[i]);
+        let params = getUrlFromParams();
+        params = `${params}&ed=${JSON.stringify(ed)}`;
+        logger('Ads call PARAMS', params);
+        apiCall(adDiv[i], 'as/c', (data)=>{
+            logger('GET Ads SUCCESS:', data)
+            loadAd(data, adDiv[i]);
+            adDiv[i].style.cursor = 'pointer';
+            adDiv[i].onclick = function(e){
+                clickAdDiv(adDiv[i], data);
+            }
+        }, (err)=>{
+            logger('GET Ads FAILURE:', err)
+        })
+    }
+}
+
+function clickAdDiv (adDiv, data) {
+    let ed = getEd(adDiv, data);
+    params = getUrlFromParams();
+    params = `${params}&ed=${JSON.stringify(ed)}`;
+    logger('Ad click PARAMS:', params)
     window.open(data.c);
     sendImpression('ac', params);
 }
@@ -141,14 +171,14 @@ function styleHoverDiv(hoverDiv) {
     hoverDiv.style.padding = "3px 7px";
 }
 
-function addAdButton(adDiv){
+function addAdButton(adDiv, adData){
     let adButton = document.createElement('div');
+    adButton.setAttribute('id', `ad-text-${adData.i}`);
     styleAdButton(adButton);
     let textNode = document.createTextNode('Ad')
     adButton.appendChild(textNode);
     adButton.onclick = function(e){
         e.stopPropagation();
-
     }
     adDiv.appendChild(adButton);
     return adButton;
@@ -177,24 +207,27 @@ function addiIconAndHoverDiv(adDiv){
     return iImage
 }
 
-function styleContainer(container){
+function styleContainer(container, adDiv){
     container.style.display = "flex";
     container.style.alignItems = "center";
     container.style.border = "1px solid #DDDDDD";
     container.style.justifyContent = "center";
-    container.style.flexDirection = "column";
+    container.style.flexDirection = adDiv.style.width === "300px" ? "column" : "row";
     container.style.fontSize = "24px";
     container.style.color = "#4E4E4E";
-    container.style.width = "300px";
-    container.style.height = "250px";
+    container.style.width = adDiv.style.width === "300px" ? "300px" : adDiv.style.width === "728px" ? "728px" : "320px";
+    container.style.height = adDiv.style.height === "250px" ? "250px" : adDiv.style.height === "90px" ? "90px" : "50px";
+    container.style.background = "rgb(250, 250, 250)";
+    container.style.cursor = "default";
 }
+
 function styleHeadingText(heading){
     heading.style.display = "flex";
     heading.style.alignItems = "center";
     heading.style.justifyContent = "center";
 }
 
-function styleStopAdButton(button){
+function styleStopAdButton(button, adDiv){
     button.style.background = "#0082E5";
     button.style.borderRadius = "5px";
     button.style.color = "white";
@@ -204,17 +237,20 @@ function styleStopAdButton(button){
     button.style.justifyContent = "center";
     button.style.padding = "8px 15px";
     button.style.fontSize = "16px";
-    button.style.marginTop = "14px";
+    button.style.marginTop = adDiv.style.width === "300px" ? "14px" : "0";
+    button.style.marginLeft = adDiv.style.width === "300px" ? "0" : "28px";
+
 }
 
 function styleBgnImage(bgnImage){
     bgnImage.style.marginLeft = "9px";
 }
 
-function addHeadingText(adDiv){
+function addHeadingText(adDiv, adData){
     let container = document.createElement('div');
-    styleContainer(container);
+    styleContainer(container, adDiv);
     let heading = document.createElement('div');
+    heading.setAttribute('id', `ad-heading-${adData.i}`);
     styleHeadingText(heading);
     let textNode = document.createTextNode('Ads by')
     heading.appendChild(textNode);
@@ -223,17 +259,141 @@ function addHeadingText(adDiv){
     bgnImage.src = "http://cdn-bgp.bluestacks.com/bgp/BGP_Snippet_Code/icons/bgn.png";
     heading.appendChild(bgnImage);
     container.appendChild(heading);
-    addStopButton(container);
+    addStopButton(container, adData, adDiv);
     adDiv.appendChild(container);
     return container;
-
 }
 
-function addStopButton(headingDiv){
+function styleConfirmationText(textContainer){
+    textContainer.style.fontSize = "20px";
+    textContainer.style.color = "#4E4E4E";
+    textContainer.style.fontWeight = "bold";
+    textContainer.style.display = "flex";
+    textContainer.style.alignItems = "center";
+    textContainer.style.justifyContent = "center";
+    textContainer.style.transition = "opacity 1500ms ease 1.5s";
+    textContainer.style.willChange = "opacity";
+}
+
+function addConfirmationText(choicesContainer, headingDiv, text){
+    let textContainer = document.createElement('div');
+    styleConfirmationText(textContainer);
+    let textNode = document.createTextNode(`${text}`);
+    textContainer.appendChild(textNode);
+    choicesContainer.remove();
+    headingDiv.appendChild(textContainer);
+    return textContainer;
+}
+
+function styleChoicesContainer(choicesContainer, adDiv) {
+    choicesContainer.style.display = "flex";
+    adDiv.style.width === "300px" && (choicesContainer.style.height = "132px");
+    choicesContainer.style.width = adDiv.style.width === "300px" ? "273px" : adDiv.style.width === "728px" ? "600px" : "200px";
+    choicesContainer.style.flexFlow = "wrap";
+    choicesContainer.style.alignItems = "center";
+    choicesContainer.style.justifyContent = "space-between";
+    adDiv.style.width === "300px" && (choicesContainer.style.marginTop = "18px");
+    adDiv.style.width !== "300px" && (choicesContainer.style.marginLeft = "18px");
+}
+
+function styleChoice(choice) {
+    choice.style.display = "flex";
+    choice.style.alignItems = "center";
+    choice.style.justifyContent = "center";
+    choice.style.color = "#414141";
+    choice.style.fontSize = "12px";
+    choice.style.width = "132px";
+    choice.style.height = "58px";
+    choice.style.border = "1px solid #D3D3D3";
+    choice.style.textAlign = "center";
+}
+
+function addChoices(choicesContainer, adData, adDiv, headingDiv) {
+    let choices = [
+        {
+            id: `ad-choice-1-${adData.i}`,
+            text: "Not interested in this Ad",
+            ns: "1A"
+        },
+        {
+            id: `ad-choice-2-${adData.i}`,
+            text: "Not interested in similar Ads",
+            ns: "2A"
+        },
+        {
+            id: `ad-choice-3-${adData.i}`,
+            text: "Seen this Ad multiple times",
+            ns: "3A"
+        },
+        {
+            id: `ad-choice-4-${adData.i}`,
+            text: "Ad was inappropriate",
+            ns: "4A"
+        }
+    ];
+    
+    choices.forEach(ch => {
+        let choice = document.createElement('div');
+        choice.setAttribute('id', ch.id);
+        styleChoice(choice);
+        let choiceText = document.createTextNode(ch.text);
+        choice.appendChild(choiceText);
+        choice.onclick = function(e) {
+            adDiv.style.width === "300px" && document.getElementById(`ad-heading-${adData.i}`).remove();
+            let textContainer = addConfirmationText(choicesContainer, headingDiv, "We will try not to show this Ad");
+            requestAnimationFrame(() => {
+                textContainer.style.opacity = "0";
+            })
+            logger('clicked');
+            setTimeout(()=>{
+                textContainer.remove();
+                addConfirmationText(choicesContainer, headingDiv, "Ad closed by BGN");
+            }, 3000);
+            apiCall(adDiv, 'as/f', (res)=>{
+                logger('click api SUCCESS', ch.ns, ch.text);
+                logger('res:::', res);
+            }, err => {
+                logger('click api ERROR', err);
+            }, 'nr', ch.ns, adData);
+        }
+        choice.onmouseover = function(e){
+            choice.style.color = '#0082E5';
+            choice.style.border = '1px solid #0082E5';
+            choice.style.cursor = 'pointer';
+        }
+        choice.onmouseout = function(e){
+            choice.style.color = '#4E4E4E';
+            choice.style.border = '1px solid rgb(211, 211, 211)';
+        }
+        choicesContainer.appendChild(choice);
+    })
+}
+
+function addChoiceDivs(headingDiv, adData, adDiv) {
+    let choicesContainer = document.createElement('div');
+    choicesContainer.setAttribute('id', `ad-choice-container-${adData.i}`);
+    styleChoicesContainer(choicesContainer, adDiv);
+    addChoices(choicesContainer, adData, adDiv, headingDiv);
+    headingDiv.appendChild(choicesContainer);
+}
+
+function addStopButton(headingDiv, adData, adDiv){
     let button = document.createElement('div');
-    styleStopAdButton(button);
-    let textNode = document.createTextNode('Stop seing this Ad')
+    styleStopAdButton(button, adDiv);
+    let textNode = document.createTextNode('Stop seeing this Ad')
     button.appendChild(textNode);
+    button.onclick = function(e) {
+        apiCall(adDiv, 'as/f', (res)=>{
+            logger('click api SUCCESS')
+            logger('res:::', res);
+        }, (err) => {
+            logger('click api ERROR', err)
+        }, 'na', undefined, adData);
+        button.remove();
+        document.getElementById(`ad-back-button-${adData.i}`).remove();
+        adDiv.style.width !== "300px" && document.getElementById(`ad-heading-${adData.i}`).remove();
+        addChoiceDivs(headingDiv, adData, adDiv);
+    }
     headingDiv.appendChild(button);
 }
 
@@ -247,20 +407,20 @@ function styleBackButton(button) {
 
 function addBackButton(adDiv, iImage, adButton, xImage, container, adData){
     let backButton = document.createElement('img');
+    backButton.setAttribute('id', `ad-back-button-${adData.i}`);
     styleBackButton(backButton);
     backButton.src = "http://cdn-bgp.bluestacks.com/bgp/BGP_Snippet_Code/icons/Back.png";
     backButton.onclick = function(e) {
-        backButton.style.display = "none";
+        backButton.remove();
         iImage.style.visibility = "visible";
         adButton.style.display = "flex";
         xImage.style.visibility = "visible";
-        container.style.display = "none";
+        container.remove();
         adDiv.style.backgroundImage = `url('${adData.u}')`;
         adDiv.onclick = function(e) {
             clickAdDiv(adDiv, adData);
         }
         e.stopPropagation();
-        
     }
     adDiv.appendChild(backButton);
 }
@@ -271,17 +431,15 @@ function addCrossIcon(adDiv, iImage, adButton, adData){
     xImage.src = "https://cdn-bgp.bluestacks.com/bgp/BGP_Snippet_Code/icons/cross_icon.png";
     xImage.onclick = function(e){
         e.stopPropagation();
-        adDiv.style.background = "rgba(255, 255, 255, 0.5)";
-        // adDiv.style.border = "1px solid #DDDDDD";
+        adDiv.style.background = "transparent";
         iImage.style.visibility = "hidden";
         adButton.style.display = "none";
         xImage.style.visibility = "hidden";
         adDiv.onclick = function(e) {
             return;
         }
-        let container = addHeadingText(adDiv);
+        let container = addHeadingText(adDiv, adData);
         addBackButton(adDiv, iImage, adButton, xImage, container, adData);
-
    }
     adDiv.appendChild(xImage);
 }
@@ -293,28 +451,17 @@ function addCrossIcon(adDiv, iImage, adButton, adData){
 function loadAd (data, adDiv) {
     let s = document.createElement("IMG");
     s.src = data.u;
-    let w = adDiv.style.width.split('px')[0];
-    let h = adDiv.style.height.split('px')[0];
-    let sid = adDiv.getAttribute("data-bgn-as-slot");
-    let ed = {
-        w,
-        h,
-        sid: sid,
-    }
-    ed.p = data.p;
-    ed.u = data.u;
-    ed.i = data.i;
+    let ed = getEd(adDiv, data);
     let params = getUrlFromParams();
     params = `${params}&ed=${JSON.stringify(ed)}`;
     s.onerror = function(){
-        // adDiv.style.backgroundImage = "url('https://semantic-ui.com/images/wireframe/square-image.png')";
         sendImpression('ae', params);
     }
     s.onload = function(){
         adDiv.style.backgroundImage = `url('${data.u}')`;
         adDiv.style.position = "relative";
         adDiv.style.textDecoration = "none";
-        let adButton = addAdButton(adDiv);
+        let adButton = addAdButton(adDiv, data);
         let iImage = addiIconAndHoverDiv(adDiv);
         addCrossIcon(adDiv, iImage, adButton, data);
     }
@@ -423,6 +570,10 @@ function getRandomNumber() {
     return Math.floor(1000 + Math.random() * 9000);
 }
 
+function getParamFromUrl(paramName){
+    return (new URL(window.location.href)).searchParams.get(paramName)
+}
+
 /*
     Form a params object with all the keys
     necessary to be sent as params in stats api calls 
@@ -430,11 +581,11 @@ function getRandomNumber() {
 function getParams() {
     let adDiv = document.getElementsByClassName("asbybgn");
     let id = adDiv[0].getAttribute('data-bgn-as-client');
-    let cn = (new URL(window.location.href)).searchParams.get('utm_campaign');
-    let cs = (new URL(window.location.href)).searchParams.get('utm_source');
-    let ct = (new URL(window.location.href)).searchParams.get('utm_term');
-    let cm = (new URL(window.location.href)).searchParams.get('utm_medium');
-    let cc = (new URL(window.location.href)).searchParams.get('utm_content');
+    let cn = getParamFromUrl('utm_campaign');
+    let cs = getParamFromUrl('utm_source');
+    let ct = getParamFromUrl('utm_term');
+    let cm = getParamFromUrl('utm_medium');
+    let cc = getParamFromUrl('utm_content');
     let cookie = document.cookie.split(";").find(it => {return it.includes('bgn_id')});
     let bdt = getDeviceType();
     let bn = getBrowser();
@@ -472,29 +623,29 @@ function getParams() {
 
 /* stats api call */
 function sendImpression (type, params) {
-    window.urlParams === "true" && console.log('Sending Impression');
+    logger('Sending Impression');
     if(!params) {
         params = getUrlFromParams();
     }
     params = params + `&ev=${type}`;
-    fetch(`https://bgn-1-dot-bluestacks-cloud-qa.appspot.com/as/i?${params}`, {
+    fetch(`${getHost()}/as/i?${params}`, {
         method: 'GET',
         credentials: 'include'
     }).then((res)=>{
-        window.urlParams === "true" && console.log('Impression SUCCESS', type);
+        logger('Impression SUCCESS', type);
     }).catch(err => {
-        window.urlParams.bgnLogs === "true" && console.log('Impression ERROR', err);
+        logger('Impression ERROR', err);
     })
 }
 
 /* fires on DOM load or ready state */
 if( document.readyState !== 'loading' ) {
-    window.urlParams.bgnLogs === "true" && console.log('Ready state already');
+    logger('Ready state already');
     sendImpression('pv');
     getAds();
 } else {
     document.addEventListener('DOMContentLoaded', function () {
-        window.urlParams.bgnLogs === "true" && console.log('DOM content loaded');
+        logger('DOM content loaded');
         sendImpression('pv');
         getAds();
     });
