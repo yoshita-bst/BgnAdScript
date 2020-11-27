@@ -20,7 +20,7 @@ getUrlParams();
 function getHost() {
     let HOST = "https://cdn.bgn.gg";
     let env = window.location.href;
-    if(env.includes("/afr2b/engg/") || env.includes('127.0.0.1') || env.includes('https://yoshita-bst.github.io ')){
+    if(env.includes("/afr2b/engg/") || env.includes('127.0.0.1') || env.includes('https://yoshita-bst.github.io')){
         logger('inside if of get host');
         HOST = "https://bgn-1-dot-bluestacks-cloud-qa.appspot.com";
     }
