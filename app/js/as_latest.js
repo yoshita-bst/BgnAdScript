@@ -81,7 +81,7 @@ function logger() {
   window.urlParams.bgnLogs === "true" && console.log(string, ...params);
 }
 
-function getEd(adDiv, adData) {
+function getEd(adDiv, adData, type) {
   let w = adDiv.style.width.split("px")[0];
   let h = adDiv.style.height.split("px")[0];
   let sid = adDiv.getAttribute("data-bgn-as-slot");
@@ -97,6 +97,11 @@ function getEd(adDiv, adData) {
     ed.i = adData.i;
     ed.a = adData.a;
   }
+  if (type) {
+    ed.cta = "t";
+  } else {
+    ed.cta = "f";
+  }
   return ed;
 }
 
@@ -106,7 +111,7 @@ function apiCall(adDiv, url, successHandler, failureHandler, ev, ns, adData) {
     ed.ns = ns;
   }
   let params = getUrlFromParams();
-  params = `${params}&ed=${JSON.stringify(ed)}`;
+  params = `${params}&ed=${encodeURIComponent(JSON.stringify(ed))}`;
   if (ev) {
     params = params + `&ev=${ev}`;
   }
@@ -139,7 +144,7 @@ function getAds() {
   for (let i = 0; i < adDiv.length; i++) {
     let ed = getEd(adDiv[i]);
     let params = getUrlFromParams();
-    params = `${params}&ed=${JSON.stringify(ed)}`;
+    params = `${params}&ed=${encodeURIComponent(JSON.stringify(ed))}`;
     logger("Ads call PARAMS", params);
     apiCall(
       adDiv[i],
@@ -159,10 +164,10 @@ function getAds() {
   }
 }
 
-function clickAdDiv(adDiv, data) {
-  let ed = getEd(adDiv, data);
+function clickAdDiv(adDiv, data, type) {
+  let ed = getEd(adDiv, data, type);
   params = getUrlFromParams();
-  params = `${params}&ed=${JSON.stringify(ed)}`;
+  params = `${params}&ed=${encodeURIComponent(JSON.stringify(ed))}`;
   logger("Ad click PARAMS:", params);
   window.open(data.c);
   sendImpression("ac", params);
@@ -188,13 +193,13 @@ function styleAdButton(adButton) {
 /* Adds styling to the 'i' image of the add unit */
 function styleiImage(iImage, data) {
   iImage.style.background = "black";
-  iImage.style.width = "20px";
-  iImage.style.height = "20px";
+  iImage.style.width = "16px";
+  iImage.style.height = "16px";
   iImage.style.position = "absolute";
   iImage.style.borderRadius = "unset";
   iImage.style.top = "3px";
   if (data.a !== "default") {
-    iImage.style.right = "28px";
+    iImage.style.right = "23px";
   } else {
     iImage.style.right = "4px";
   }
@@ -204,8 +209,8 @@ function styleiImage(iImage, data) {
 function stylexImage(xImage) {
   xImage.style.background = "black";
   xImage.style.borderRadius = "unset";
-  xImage.style.width = "20px";
-  xImage.style.height = "20px";
+  xImage.style.width = "16px";
+  xImage.style.height = "16px";
   xImage.style.position = "absolute";
   xImage.style.top = "3px";
   xImage.style.right = "4px";
@@ -224,13 +229,13 @@ function styleHoverDiv(hoverDiv, data) {
   hoverDiv.style.justifyContent = "center";
   hoverDiv.style.top = "3px";
   if (data.a !== "default") {
-    hoverDiv.style.right = "50px";
+    hoverDiv.style.right = "43px";
   } else {
-    hoverDiv.style.right = "28px";
+    hoverDiv.style.right = "22px";
   }
   hoverDiv.style.visibility = "hidden";
   hoverDiv.style.padding = "0px 7px";
-  hoverDiv.style.height = "20px";
+  hoverDiv.style.height = "16px";
 }
 
 function addAdButton(adDiv, adData) {
@@ -469,7 +474,6 @@ function addChoices(choicesContainer, adData, adDiv, headingDiv) {
       }
       logger("clicked");
       setTimeout(() => {
-        console.log("inside set timeout");
         textContainer.remove();
         addConfirmationText(
           choicesContainer,
@@ -551,12 +555,21 @@ function styleBackButton(button, adDiv) {
   button.style.left = adDiv.style.width === "320px" ? "8px" : "13px";
 }
 
-function addBackButton(adDiv, iImage, adButton, xImage, container, adData) {
+function addBackButton(
+  adDiv,
+  iImage,
+  adButton,
+  xImage,
+  container,
+  adData,
+  playNowButton
+) {
   let backButton = document.createElement("img");
   backButton.setAttribute("id", `ad-back-button-${adData.i}`);
   styleBackButton(backButton, adDiv);
   backButton.src = atob(CONSTS.icons.back_icon);
   backButton.onclick = function (e) {
+    playNowButton.style.display = "flex";
     backButton.remove();
     iImage.style.visibility = "visible";
     adButton.style.display = "flex";
@@ -571,7 +584,7 @@ function addBackButton(adDiv, iImage, adButton, xImage, container, adData) {
   adDiv.appendChild(backButton);
 }
 
-function addCrossIcon(adDiv, iImage, adButton, adData) {
+function addCrossIcon(adDiv, iImage, adButton, adData, playNowButton) {
   let xImage = document.createElement("img");
   stylexImage(xImage);
   xImage.src = atob(CONSTS.icons.cross_icon);
@@ -581,13 +594,84 @@ function addCrossIcon(adDiv, iImage, adButton, adData) {
     iImage.style.visibility = "hidden";
     adButton.style.display = "none";
     xImage.style.visibility = "hidden";
+    playNowButton.style.display = "none";
     adDiv.onclick = function (e) {
       return;
     };
     let container = addHeadingText(adDiv, adData);
-    addBackButton(adDiv, iImage, adButton, xImage, container, adData);
+    addBackButton(
+      adDiv,
+      iImage,
+      adButton,
+      xImage,
+      container,
+      adData,
+      playNowButton
+    );
   };
   adDiv.appendChild(xImage);
+}
+
+function stylePlayNowButton(button, adDiv) {
+  button.style.display = "flex";
+  button.style.justifyContent = "center";
+  button.style.alignItems = "center";
+  button.style.background = "linear-gradient(#F5F096, #B99731)";
+  button.style.padding = adDiv.style.width === "300px" ? "10px" : "5px 10px";
+  button.style.fontFamily = "Arial, Sans-serif";
+  button.style.fontWeight = "bold";
+  button.style.color = "black";
+  button.style.minWidth =
+    adDiv.style.height === "250px"
+      ? "109px"
+      : adDiv.style.height === "600px"
+      ? "214px"
+      : adDiv.style.height === "50px"
+      ? "62px"
+      : "133px";
+  button.style.height =
+    adDiv.style.height === "250px"
+      ? "18px"
+      : adDiv.style.height === "600px"
+      ? "39px"
+      : adDiv.style.height === "50px"
+      ? "12px"
+      : "24px";
+  button.style.marginBottom =
+    adDiv.style.height === "250px"
+      ? "10px"
+      : adDiv.style.height === "600px"
+      ? "98px"
+      : "unset";
+  button.style.marginRight =
+    adDiv.style.height === "50px"
+      ? "5px"
+      : adDiv.style.height === "90px"
+      ? "21px"
+      : "unset";
+  button.style.marginTop = adDiv.style.height === "50px" ? "18px" : "unset";
+  button.style.fontSize = adDiv.style.height === "50px" ? "12px" : "14px";
+  button.onmouseover = function () {
+    button.style.background = "#F5F096";
+  };
+  button.onmouseout = function () {
+    button.style.background = "linear-gradient(#F5F096, #B99731)";
+  };
+}
+
+function addPlayNowButton(adDiv, adData) {
+  let button = document.createElement("div");
+  stylePlayNowButton(button, adDiv);
+  let buttonString = adData.a === "default" ? "download_now" : "play_now";
+  let textNode = document.createTextNode(getLangString(buttonString));
+  button.onclick = function (e) {
+    e.stopPropagation();
+    clickAdDiv(adDiv, adData, "cta");
+  };
+  // let textNode = document.createTextNode("Play Now");
+  button.appendChild(textNode);
+  adDiv.appendChild(button);
+  return button;
 }
 
 /* 
@@ -599,23 +683,42 @@ function loadAd(data, adDiv) {
   s.src = data.u;
   let ed = getEd(adDiv, data);
   let params = getUrlFromParams();
-  params = `${params}&ed=${JSON.stringify(ed)}`;
+  params = `${params}&ed=${encodeURIComponent(JSON.stringify(ed))}`;
   s.onerror = function () {
+    if (!data.f) {
+      adDiv.style.display = "none";
+    } else {
+      let t = document.createElement("IMG");
+      t.src = data.f;
+      t.onload = function () {
+        adDiv.style.backgroundImage = `url('${data.f}')`;
+        adDiv.style.position = "relative";
+        adDiv.style.textDecoration = "none";
+        let adButton = addAdButton(adDiv, data);
+        let iImage = addiIconAndHoverDiv(adDiv, data);
+      };
+      t.onerror = function () {
+        adDiv.style.display = "none";
+      };
+    }
     sendImpression("ae", params);
-    adDiv.style.backgroundImage = `url('${data.f}')`;
-    adDiv.style.position = "relative";
-    adDiv.style.textDecoration = "none";
-    let adButton = addAdButton(adDiv, data);
-    let iImage = addiIconAndHoverDiv(adDiv, data);
   };
   s.onload = function () {
     adDiv.style.backgroundImage = `url('${data.u}')`;
     adDiv.style.position = "relative";
+    adDiv.style.display = "flex";
     adDiv.style.textDecoration = "none";
+    adDiv.style.alignItems =
+      adDiv.style.width === "300px" ? "flex-end" : "center";
+    adDiv.style.justifyContent =
+      adDiv.style.width === "728px" || adDiv.style.width === "320px"
+        ? "flex-end"
+        : "center";
     let adButton = addAdButton(adDiv, data);
+    let playNowButton = addPlayNowButton(adDiv, data);
     let iImage = addiIconAndHoverDiv(adDiv, data);
     if (data.a !== "default") {
-      addCrossIcon(adDiv, iImage, adButton, data);
+      addCrossIcon(adDiv, iImage, adButton, data, playNowButton);
     }
   };
 }

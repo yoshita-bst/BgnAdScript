@@ -9,7 +9,9 @@
         "choice_3": "Seen this ad multiple times",
         "choice_4": "Ad was inappropriate",
         "confirmation_text": "We will try not to show this ad",
-        "closing_text": "Ad closed by BGN"
+        "closing_text": "Ad closed by BGN",
+        "play_now": "Play Now",
+        "download_now": "Download Now"
     },
     "ar": {
         "ad_text": "إعلان",
@@ -21,7 +23,9 @@
         "choice_3": "رأيت هذا الإعلان عدة مرات",
         "choice_4": "كان الإعلان غير ملائم",
         "confirmation_text": "سنحاول عدم عرض هذا الإعلان مرة أخرى",
-        "closing_text": "BGN تم إغلاق الإعلان بواسطة"
+        "closing_text": "BGN تم إغلاق الإعلان بواسطة",
+        "play_now" : "العب الآن",
+        "download_now" : "التحميل الان"
     },
     "zh": {
         "ad_text": "廣告",
@@ -33,7 +37,9 @@
         "choice_3": "多次看到此廣告",
         "choice_4": "此廣告不合適",
         "confirmation_text": "我們將嘗試不再顯示此廣告",
-        "closing_text": "BGN已關閉廣告"
+        "closing_text": "BGN已關閉廣告",
+        "play_now" : "立即體驗",
+        "download_now" : "立即下載"
     },
     "fr": {
         "ad_text": "Ad",
@@ -45,7 +51,9 @@
         "choice_3": "J'ai vu cette annonce plusieurs fois",
         "choice_4": "L'annonce était inappropriée",
         "confirmation_text": "Nous essaierons de ne plus diffuser cette annonce",
-        "closing_text": "Annonce clôturée par BGN"
+        "closing_text": "Annonce clôturée par BGN",
+        "play_now" : "Jouez maintenant",
+        "download_now" : "Télécharger Maintenant"
     },
     "de": {
         "ad_text": "Werbung",
@@ -57,7 +65,9 @@
         "choice_3": "Ich habe diese Werbung mehrmals gesehen",
         "choice_4": "Werbung war unangemessen",
         "confirmation_text": "Wir werden versuchen, diese Werbung nicht mehr zu zeigen.",
-        "closing_text": "Werbung von BGN geschlossen"
+        "closing_text": "Werbung von BGN geschlossen",
+        "play_now" : "Jetzt spielen",
+        "download_now" : "Jetzt downloaden"
     },
     "id": {
         "ad_text": "Iklan",
@@ -69,7 +79,9 @@
         "choice_3": "Melihat iklan ini beberapa kali",
         "choice_4": "Iklan tidak pantas",
         "confirmation_text": "Kami akan mencoba untuk tidak menampilkan iklan ini lagi",
-        "closing_text": "Iklan ditutup oleh BGN"
+        "closing_text": "Iklan ditutup oleh BGN",
+        "play_now" : "Play Now",
+        "download_now" : "Unduh sekarang"
     },
     "it": {
         "ad_text": "Pubblicità",
@@ -81,7 +93,9 @@
         "choice_3": "Ho visto questo annuncio più volte",
         "choice_4": "L'annuncio era inappropriato",
         "confirmation_text": "Cercheremo di non mostrare più questo annuncio",
-        "closing_text": "Annuncio chiuso da BGN"
+        "closing_text": "Annuncio chiuso da BGN",
+        "play_now" : "Gioca ora",
+        "download_now" : "Scarica ora"
     },
     "ja": {
         "ad_text": "広告",
@@ -93,7 +107,9 @@
         "choice_3": "この広告を複数回見ている。",
         "choice_4": "不適切な広告だった。",
         "confirmation_text": "今後はこの広告を表示しないようにします。",
-        "closing_text": "BGNによって終了した広告"
+        "closing_text": "BGNによって終了した広告",
+        "play_now" : "今すぐプレイ",
+        "download_now" : "今すぐダウンロード"
     },
     "ko": {
         "ad_text": "광고",
@@ -105,7 +121,9 @@
         "choice_3": "이 광고를 이미 여러 번 봤습니다.",
         "choice_4": "부적절한 광고",
         "confirmation_text": "이 광고를 다시 표시하지 않습니다.",
-        "closing_text": "BGN에 의해 닫힌 광고"
+        "closing_text": "BGN에 의해 닫힌 광고",
+        "play_now" : "지금 플레이하기",
+        "download_now" : "지금 다운로드"
     },
     "pl": {
         "ad_text": "Reklama",
@@ -117,7 +135,9 @@
         "choice_3": "Widziałem tę reklamę wiele razy",
         "choice_4": "Reklama była nieodpowiednia",
         "confirmation_text": "Postaramy się więcej nie wyświetlać tej reklamy",
-        "closing_text": "Reklama wyłączona przez BGN"
+        "closing_text": "Reklama wyłączona przez BGN",
+        "play_now" : "Graj",
+        "download_now" : "Pobierz teraz"
     },
     "pt": {
         "ad_text": "Adicionar",
@@ -129,7 +149,9 @@
         "choice_3": "Vi este anúncio diversas vezes",
         "choice_4": "Anúncio impróprio",
         "confirmation_text": "Tentaremos não mostrar este anúncio novamente",
-        "closing_text": "Anúncio fechado por BGN"
+        "closing_text": "Anúncio fechado por BGN",
+        "play_now" : "Jogar agora",
+        "download_now" : "Baixe Agora"
     },
     "ru": {
         "ad_text": "Реклама",
@@ -141,7 +163,9 @@
         "choice_3": "Уже видел эту рекламу несколько раз",
         "choice_4": "Реклама была неприемлемой",
         "confirmation_text": "Мы постараемся больше не показывать эту рекламу",
-        "closing_text": "Реклама закрыта BGN"
+        "closing_text": "Реклама закрыта BGN",
+        "play_now" : "Играть сейчас",
+        "download_now" : "Скачать сейчас"
     },
     "es": {
         "ad_text": "Anuncio",
@@ -153,7 +177,9 @@
         "choice_3": "He visto este anuncio varias veces.",
         "choice_4": "El anuncio era inapropiado",
         "confirmation_text": "Intentaremos no volver a mostrar este anuncio.",
-        "closing_text": "Anuncio cerrado por BGN"
+        "closing_text": "Anuncio cerrado por BGN",
+        "play_now" : "Jugar ahora",
+        "download_now" : "Descargar ahora"
     },
     "th": {
         "ad_text": "โฆษณา",
@@ -165,7 +191,9 @@
         "choice_3": "เห็นโฆษณานี้มาแล้วหลายครั้ง",
         "choice_4": "โฆษณานี้ไม่เหมาะสม",
         "confirmation_text": "เราจะพยายามไม่ให้มีการแสดงโฆษณานี้ขึ้นอีก",
-        "closing_text": "โฆษณาถูกปิดโดย BGN"
+        "closing_text": "โฆษณาถูกปิดโดย BGN",
+        "play_now" : "เล่นเลย",
+        "download_now" : "ดาวน์โหลดเลย"
     },
     "tr": {
         "ad_text": "Reklam",
@@ -177,7 +205,9 @@
         "choice_3": "Bu reklamı birden çok kez gördüm",
         "choice_4": "Reklam uygunsuzdu",
         "confirmation_text": "Bu reklamı bir daha göstermemeye çalışacağız",
-        "closing_text": "Reklam BGN tarafından kapatıldı"
+        "closing_text": "Reklam BGN tarafından kapatıldı",
+        "play_now" : "Şimdi oyna",
+        "download_now" : "Şimdi İndirin"
     },
     "vi": {
         "ad_text": "Quảng Cáo",
@@ -189,6 +219,8 @@
         "choice_3": "Đã xem quảng cáo này nhiều lần",
         "choice_4": "Quảng cáo không phù hợp",
         "confirmation_text": "Chúng tôi sẽ cố gắng không hiển thị lại quảng cáo này",
-        "closing_text": "Quảng cáo do BGN đóng"
+        "closing_text": "Quảng cáo do BGN đóng",
+        "play_now" : "Chơi thôi",
+        "download_now" : "Tải xuống ngay"
     }   
 }
