@@ -31,21 +31,40 @@ let CONSTS = {
   apis: {
     prod_host: "aHR0cHM6Ly9iZ24uZ2c=",
     engg_host:
-      "aHR0cHM6Ly9iZ24tMS1kb3QtYmx1ZXN0YWNrcy1jbG91ZC1xYS5hcHBzcG90LmNvbQ==",
+      "aHR0cHM6Ly9iZ24tZW5nZy1kb3QtYmx1ZXN0YWNrcy1jbG91ZC1xYS5hcHBzcG90LmNvbQ==",
+    qa_host:
+      "aHR0cHM6Ly9iZ24tcWEtZG90LWJsdWVzdGFja3MtY2xvdWQtcWEuYXBwc3BvdC5jb20=",
   },
   json: {
     engg_strings:
-      "aHR0cHM6Ly9kOHlxdjZqaTE5NWxmLmNsb3VkZnJvbnQubmV0L2VuZ2cvc3RyaW5ncy5qc29u",
+      "aHR0cHM6Ly9jZG4uYmduLmdnL2FmcjJiL2VuZ2cvbG9jYWxpc2F0aW9uL3N0cmluZ3MuanNvbg==",
+    qa_strings:
+      "aHR0cHM6Ly9jZG4uYmduLmdnL2FmcjJiL3FhL2xvY2FsaXNhdGlvbi9zdHJpbmdzLmpzb24=",
     prod_strings:
-      "aHR0cHM6Ly9kOHlxdjZqaTE5NWxmLmNsb3VkZnJvbnQubmV0L3Byb2Qvc3RyaW5ncy5qc29u",
+      "aHR0cHM6Ly9jZG4uYmduLmdnL2FmcjJiL3Byb2QvbG9jYWxpc2F0aW9uL3N0cmluZ3MuanNvbg==",
   },
 };
 
 function getLangString(str) {
+  let allDefaultStrings = {
+    ad_text: "Ad",
+    title: "Ads",
+    hover_text: "Ads by BGN",
+    button_text: "Stop seeing this Ad",
+    choice_1: "Not interested in this Ad",
+    choice_2: "Not interested in similar Ads",
+    choice_3: "Seen this ad multiple times",
+    choice_4: "Ad was inappropriate",
+    confirmation_text: "We will try not to show this ad",
+    closing_text: "Ad closed by BGN",
+    play_now: "Play Now",
+    download_now: "Download Now",
+  };
   let allStrings = window.ad_strings;
   let lang = window.ad_strings.locale;
   let langStrings = lang ? allStrings[lang] : allStrings["en"];
-  return langStrings ? langStrings[str] : allStrings["en"][str];
+  let string = langStrings ? langStrings[str] : allStrings["en"][str];
+  return string || allDefaultStrings[str];
 }
 
 function getHost() {
@@ -54,13 +73,16 @@ function getHost() {
   window.ads_env = "prod";
   if (
     env.includes(atob("L2FmcjJiL2VuZ2cv")) ||
-    env.includes(atob("L2FmcjJiL3FhLw==")) ||
-    env.includes(atob("MTI3LjAuMC4x")) ||
-    env.includes(atob("aHR0cHM6Ly95b3NoaXRhLWJzdC5naXRodWIuaW8v"))
+    env.includes(atob("MTI3LjAuMC4x"))
   ) {
     logger("inside if of get host");
     HOST = atob(CONSTS.apis.engg_host);
     window.ads_env = "engg";
+  } else if (env.includes(atob("L2FmcjJiL3FhLw=="))) {
+    HOST = atob(CONSTS.apis.qa_host);
+    window.ads_env = "qa";
+  } else {
+    HOST = atob(CONSTS.apis.prod_host);
   }
   return HOST;
 }
@@ -93,7 +115,7 @@ function getEd(adDiv, adData, type) {
   if (adData) {
     ed.p = adData.p;
     ed.u = adData.u;
-    ed.c = encodeURIComponent(adData.c);
+    ed.c = adData.c;
     ed.i = adData.i;
     ed.a = adData.a;
   }
@@ -110,14 +132,15 @@ function apiCall(adDiv, url, successHandler, failureHandler, ev, ns, adData) {
   if (ns) {
     ed.ns = ns;
   }
-  let params = getUrlFromParams();
-  params = `${params}&ed=${encodeURIComponent(JSON.stringify(ed))}`;
+  let params = getParams();
+  params.ed = ed;
   if (ev) {
-    params = params + `&ev=${ev}`;
+    params.ev = ev;
   }
-  fetch(`${getHost()}/${url}?${params}`, {
-    method: "GET",
+  fetch(`${getHost()}/${url}`, {
+    method: "POST",
     credentials: "include",
+    body: JSON.stringify(params),
   })
     .then((res) => {
       let contentType = res.headers.get("content-type");
@@ -135,6 +158,29 @@ function apiCall(adDiv, url, successHandler, failureHandler, ev, ns, adData) {
     });
 }
 
+/* 
+  Check if a dom element (ad) is visible
+*/
+
+function isVisible(elem) {
+  if (!(elem instanceof Element))
+    throw Error("DomUtil: elem is not an element.");
+  const style = getComputedStyle(elem);
+  if (style.display === "none") return false;
+  if (style.visibility !== "visible") return false;
+  if (style.opacity < 0.1) return false;
+  if (
+    elem.offsetWidth +
+      elem.offsetHeight +
+      elem.getBoundingClientRect().height +
+      elem.getBoundingClientRect().width ===
+    0
+  ) {
+    return false;
+  }
+  return true;
+}
+
 /*
     Fetches all the ads through and API call
 */
@@ -142,32 +188,72 @@ function getAds() {
   let adDiv = document.getElementsByClassName("asbybgn");
   logger("inside GET Ads");
   for (let i = 0; i < adDiv.length; i++) {
-    let ed = getEd(adDiv[i]);
-    let params = getUrlFromParams();
-    params = `${params}&ed=${encodeURIComponent(JSON.stringify(ed))}`;
-    logger("Ads call PARAMS", params);
-    apiCall(
-      adDiv[i],
-      "as/c",
-      (data) => {
-        logger("GET Ads SUCCESS:", data);
-        loadAd(data, adDiv[i]);
-        adDiv[i].style.cursor = "pointer";
-        adDiv[i].onclick = function (e) {
-          clickAdDiv(adDiv[i], data);
-        };
-      },
-      (err) => {
-        logger("GET Ads FAILURE:", err);
-      }
-    );
+    if (adDiv[i].getAttribute("data-bgn-as-slot") === "as-slot-responsive") {
+      console.log("inside if:");
+      adDiv[i].parentNode.style.overflow = "hidden";
+      adDiv[i].style.width = "100%";
+      adDiv[i].style.position = "relative";
+      //   adDiv[i].style.height = "100%";
+      let img = document.createElement("img");
+      img.style.width = "100%";
+      img.style.height = "auto";
+      img.src = "https://i.ibb.co/5FrsWG2/ad.png";
+      adDiv[i].appendChild(img);
+      let data = {
+        i: "1269e6b6-6740-4c2d-879b-6048b8f2b30a",
+        a: "default",
+        c: "https://now.gg",
+        u:
+          "https://cdn.bgn.gg/afr2b/as/c/qa/now.gg/com.aqupepgames.projectpepe.jpg?ci=afr2b-beta-e1927f9231b3e330252f5101b1231b2b&dh=cdn.bgn.gg&bdt=desktop&bn=Google+Chrome&c=IN&ii=1269e6b6-6740-4c2d-879b-6048b8f2b30a&ap=com.aqupepgames.projectpepe&ui=a9e2478e-86c9-4c81-a2aa-13132bb091e5&env=engg&sid=as-slot-300_600&aid=ad_2&bdo=Mac%2FiOS&dp=%2Fafr2b%2Fengg%2F",
+        p: "com.aqupepgames.projectpepe",
+      };
+      let adButton = addAdButton(adDiv[i], data);
+      let playNowButton = addPlayNowButton(adDiv[i], data);
+      let iIcon = addiIconAndHoverDiv(adDiv[i], data);
+      //   let crossIcon = addCrossIcon(
+      //     adDiv[i],
+      //     iIcon,
+      //     adButton,
+      //     data,
+      //     playNowButton
+      //   );
+      //   adDiv[i].style.backgroundSize =
+      //     getDeviceType() === "d" ? "100% auto" : "contain";
+      //   adDiv[i].style.backgroundPosition = "center center";
+      //   adDiv[i].style.backgroundRepeat = "no-repeat";
+      //   adDiv[i].style.backgroundSize = "100%";
+    }
+
+    if (isVisible(adDiv[i])) {
+      adDiv[i].style.backgroundImage = "url('https://i.ibb.co/5FrsWG2/ad.png')";
+
+      //   let ed = getEd(adDiv[i]);
+      //   let params = getParams();
+      //   params.ed = ed;
+      //   logger("Ads call PARAMS", params);
+      //   apiCall(
+      //     adDiv[i],
+      //     "as/c",
+      //     (data) => {
+      //       logger("GET Ads SUCCESS:", data);
+      //       loadAd(data, adDiv[i]);
+      //       adDiv[i].style.cursor = "pointer";
+      //       adDiv[i].onclick = function (e) {
+      //         clickAdDiv(adDiv[i], data);
+      //       };
+      //     },
+      //     (err) => {
+      //       logger("GET Ads FAILURE:", err);
+      //     }
+      //   );
+    }
   }
 }
 
 function clickAdDiv(adDiv, data, type) {
   let ed = getEd(adDiv, data, type);
-  params = getUrlFromParams();
-  params = `${params}&ed=${encodeURIComponent(JSON.stringify(ed))}`;
+  params = getParams();
+  params.ed = ed;
   logger("Ad click PARAMS:", params);
   window.open(data.c);
   sendImpression("ac", params);
@@ -280,7 +366,9 @@ function styleContainer(container, adDiv) {
   container.style.border = "1px solid #DDDDDD";
   container.style.justifyContent = "center";
   container.style.flexDirection =
-    adDiv.style.width === "300px" ? "column" : "row";
+    adDiv.style.width === "300px" || adDiv.style.width === "250px"
+      ? "column"
+      : "row";
   container.style.fontSize = "24px";
   container.style.fontFamily = "Arial, sans-serif";
   container.style.color = "#4E4E4E";
@@ -320,9 +408,12 @@ function styleStopAdButton(button, adDiv) {
   } else {
     button.style.fontSize = "14px";
   }
-  button.style.marginTop = adDiv.style.width === "300px" ? "14px" : "0";
+  button.style.marginTop =
+    adDiv.style.width === "300px" || adDiv.style.width === "250px"
+      ? "14px"
+      : "0";
   button.style.marginLeft =
-    adDiv.style.width === "300px"
+    adDiv.style.width === "300px" || adDiv.style.width === "250px"
       ? "0"
       : adDiv.style.width === "320px"
       ? "10px"
@@ -396,6 +487,8 @@ function addConfirmationText(choicesContainer, headingDiv, text, bgnImg) {
 
 function styleChoicesContainer(choicesContainer, adDiv) {
   choicesContainer.style.display = "flex";
+  adDiv.style.width === "250px" &&
+    (choicesContainer.style.flexDirection = "column");
   adDiv.style.width === "300px" && (choicesContainer.style.height = "132px");
   choicesContainer.style.width =
     adDiv.style.width === "300px"
@@ -629,7 +722,7 @@ function stylePlayNowButton(button, adDiv) {
       : adDiv.style.height === "50px"
       ? "62px"
       : "133px";
-  button.style.height =
+  button.style.minHeight =
     adDiv.style.height === "250px"
       ? "18px"
       : adDiv.style.height === "600px"
@@ -682,8 +775,8 @@ function loadAd(data, adDiv) {
   let s = document.createElement("IMG");
   s.src = data.u;
   let ed = getEd(adDiv, data);
-  let params = getUrlFromParams();
-  params = `${params}&ed=${encodeURIComponent(JSON.stringify(ed))}`;
+  let params = getParams();
+  params.ed = ed;
   s.onerror = function () {
     if (!data.f) {
       adDiv.style.display = "none";
@@ -693,9 +786,20 @@ function loadAd(data, adDiv) {
       t.onload = function () {
         adDiv.style.backgroundImage = `url('${data.f}')`;
         adDiv.style.position = "relative";
+        adDiv.style.margin = "0 auto";
         adDiv.style.textDecoration = "none";
+        adDiv.style.display = "flex";
+        adDiv.style.alignItems =
+          adDiv.style.width === "300px" || adDiv.style.width === "250px"
+            ? "flex-end"
+            : "center";
+        adDiv.style.justifyContent =
+          adDiv.style.width === "728px" || adDiv.style.width === "320px"
+            ? "flex-end"
+            : "center";
         let adButton = addAdButton(adDiv, data);
         let iImage = addiIconAndHoverDiv(adDiv, data);
+        let playNowButton = addPlayNowButton(adDiv, data);
       };
       t.onerror = function () {
         adDiv.style.display = "none";
@@ -706,6 +810,7 @@ function loadAd(data, adDiv) {
   s.onload = function () {
     adDiv.style.backgroundImage = `url('${data.u}')`;
     adDiv.style.position = "relative";
+    adDiv.style.margin = "0 auto";
     adDiv.style.display = "flex";
     adDiv.style.textDecoration = "none";
     adDiv.style.alignItems =
@@ -807,30 +912,6 @@ function getOS() {
   return OSName;
 }
 
-/*
-    Used inside getUrlFromParams() function
-    to append only non-null params to the string
-*/
-function appendParam(paramKey, paramValue, string) {
-  if (paramKey) {
-    string = string + `&${paramKey}=${paramValue}`;
-  }
-  return string;
-}
-
-/*
-    Form the params url for GET
-    api calls done in the script.
-*/
-function getUrlFromParams() {
-  let params = getParams();
-  let paramString = "";
-  Object.keys(params).forEach((p) => {
-    paramString = appendParam(p, params[p], paramString);
-  });
-  return paramString;
-}
-
 /* Get a random 4 digit number */
 function getRandomNumber() {
   return Math.floor(1000 + Math.random() * 9000);
@@ -861,19 +942,19 @@ function getParams() {
   let z = getRandomNumber();
   let params = {
     id: id,
-    dl: encodeURIComponent(window.location.href),
-    dh: encodeURIComponent(window.location.hostname),
-    dp: encodeURIComponent(window.location.pathname),
-    de: encodeURIComponent(document.charset),
-    sr: encodeURIComponent(window.screen.width + "," + window.screen.height),
-    vp: encodeURIComponent(window.innerWidth + "," + window.innerHeight),
-    sd: encodeURIComponent(window.screen.colorDepth),
-    dt: encodeURIComponent(document.title),
-    ul: encodeURIComponent(window.navigator.language),
+    dl: window.location.href,
+    dh: window.location.hostname,
+    dp: window.location.pathname,
+    de: document.charset,
+    sr: window.screen.width + "," + window.screen.height,
+    vp: window.innerWidth + "," + window.innerHeight,
+    sd: window.screen.colorDepth,
+    dt: document.title,
+    ul: window.navigator.language,
     ce: +window.navigator.cookieEnabled,
     je: +window.navigator.javaEnabled(),
-    dpr: encodeURIComponent(window.devicePixelRatio),
-    ua: encodeURIComponent(window.navigator.userAgent),
+    dpr: window.devicePixelRatio,
+    ua: window.navigator.userAgent,
     dr: document.referrer,
     bdt: bdt,
     bn: bn,
@@ -894,12 +975,15 @@ function sendImpression(type, params) {
   logger("Sending Impression");
   let host = getHost();
   if (!params) {
-    params = getUrlFromParams();
+    params = getParams();
   }
-  params = params + `&ev=${type}`;
-  fetch(`${getHost()}/as/i?${params}`, {
-    method: "GET",
+  params.ev = type;
+  console.log("params:", params, type);
+
+  fetch(`${getHost()}/as/i`, {
+    method: "POST",
     credentials: "include",
+    body: JSON.stringify(params),
   })
     .then((res) => {
       logger("Impression SUCCESS", type);
@@ -916,7 +1000,9 @@ function getStrings(locale) {
   fetch(
     window.ads_env === "prod"
       ? atob(CONSTS.json.prod_strings)
-      : atob(CONSTS.json.engg_strings),
+      : window.ads_env === "engg"
+      ? atob(CONSTS.json.engg_strings)
+      : atob(CONSTS.json.qa_strings),
     {
       method: "GET",
     }
